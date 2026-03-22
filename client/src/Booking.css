@@ -1,0 +1,26 @@
+.booking-container {
+  padding: 60px 20px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.booking-form input {
+  width: 100%;
+  padding: 14px;
+  margin: 10px 0 20px 0;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.confirm-btn {
+  width: 100%;
+  padding: 15px;
+  background: #1e3c72;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+}

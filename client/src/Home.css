@@ -1,0 +1,41 @@
+/* Home.css */
+.home-container {
+  height: 100vh;
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: white;
+}
+
+.hero-section {
+  padding: 40px;
+  max-width: 700px;
+}
+
+h1 { font-size: 3.5rem; margin-bottom: 20px; font-weight: 700; }
+p { font-size: 1.25rem; margin-bottom: 40px; opacity: 0.9; }
+
+/* ทำให้ปุ่มเด่นชัดขึ้น */
+.nav-buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+.btn-primary, .btn-secondary {
+  padding: 18px 36px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 50px; /* ทำให้ปุ่มโค้งมนดูทันสมัย */
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.btn-primary { background: #f59e0b; color: #1e3c72; } /* สีทองตัดน้ำเงิน */
+.btn-primary:hover { background: #d97706; transform: scale(1.05); }
+
+.btn-secondary { background: rgba(255, 255, 255, 0.1); color: white; border: 2px solid white; }
+.btn-secondary:hover { background: white; color: #1e3c72; }

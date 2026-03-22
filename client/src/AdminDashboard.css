@@ -1,0 +1,4 @@
+.room-table { width: 90%; margin: 20px auto; border-collapse: separate; border-spacing: 0; }
+.room-table th { background: #f1f5f9; padding: 16px; border-bottom: 2px solid #cbd5e1; }
+.room-table td { padding: 16px; border-bottom: 1px solid #e2e8f0; }
+button { cursor: pointer; padding: 8px 16px; border-radius: 6px; border: none; margin: 0 4px; }
