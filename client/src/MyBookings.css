@@ -1,0 +1,71 @@
+.bookings-container {
+  padding: 48px 20px 80px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.bookings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.bookings-link {
+  text-decoration: none;
+  color: #1d4ed8;
+  font-weight: 600;
+}
+
+.bookings-error {
+  color: #b91c1c;
+}
+
+.booking-empty {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.booking-history-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 18px;
+}
+
+.booking-history-card {
+  background: white;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+.booking-history-card h3 {
+  margin-top: 0;
+}
+
+.booking-history-card p {
+  margin: 0 0 10px;
+  color: #475569;
+}
+
+.booking-pill {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.booking-pill-booked {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.booking-pill-checked-in {
+  background: #dcfce7;
+  color: #15803d;
+}

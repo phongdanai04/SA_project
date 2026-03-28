@@ -1,43 +1,286 @@
 const express = require('express');
 const cors = require('cors');
+const { MongoClient, ObjectId } = require('mongodb');
+
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// ข้อมูลห้องพัก (แนะนำ: เก็บไว้ที่ตัวแปรแบบนี้ไปก่อนครับ พรุ่งนี้ค่อยอธิบายอาจารย์ว่านี่คือ In-memory Data)
-let rooms = [
-    { id: 1, roomNumber: "101", type: "Deluxe", price: 1500, status: "ว่าง" },
-    { id: 2, roomNumber: "102", type: "Standard", price: 800, status: "ไม่ว่าง" }
-];
+const url = 'mongodb://127.0.0.1:27017';
+const client = new MongoClient(url);
 
-// 1. ดึงรายการห้องพัก (คุณทำแล้ว)
-app.get('/api/rooms', (req, res) => {
-    res.json(rooms);
+let db;
+
+function getCollection(name) {
+  return db.collection(name);
+}
+
+function toObjectId(value) {
+  try {
+    return new ObjectId(value);
+  } catch {
+    return null;
+  }
+}
+
+function sanitizeUser(user) {
+  if (!user) {
+    return null;
+  }
+
+  return {
+    _id: user._id,
+    username: user.username,
+    email: user.email,
+    phone: user.phone,
+    role: user.role,
+    createdAt: user.createdAt,
+  };
+}
+
+function calculateNights(checkInDate, checkOutDate) {
+  const start = new Date(checkInDate);
+  const end = new Date(checkOutDate);
+  const diff = end.getTime() - start.getTime();
+  const nights = Math.ceil(diff / (1000 * 60 * 60 * 24));
+
+  return nights > 0 ? nights : 0;
+}
+
+async function connectDB() {
+  try {
+    await client.connect();
+    db = client.db('hotelDB');
+    console.log('Connected MongoDB');
+  } catch (err) {
+    console.error(err);
+    process.exit(1);
+  }
+}
+
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { identifier, password } = req.body;
+
+    if (!identifier || !password) {
+      return res.status(400).json({ error: 'Identifier and password are required' });
+    }
+
+    const users = getCollection('users');
+    const user = await users.findOne({
+      $or: [{ username: identifier }, { email: identifier }],
+      password,
+    });
+
+    if (!user) {
+      return res.status(401).json({ error: 'ชื่อผู้ใช้ อีเมล หรือรหัสผ่านไม่ถูกต้อง' });
+    }
+
+    res.json({
+      message: 'Login successful',
+      user: sanitizeUser(user),
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// 2. อัปเดตสถานะห้องพัก (เพิ่มตัวนี้เข้าไปเพื่อให้หน้า Admin ใช้งานได้จริง!)
-app.put('/api/rooms/:id', (req, res) => {
-    const { id } = req.params;
-    const { status } = req.body;
-    
-    rooms = rooms.map(room => room.id == id ? { ...room, status } : room);
-    res.json({ message: "อัปเดตสำเร็จ", rooms });
+app.get('/api/rooms', async (req, res) => {
+  try {
+    const rooms = getCollection('rooms');
+    const data = await rooms.find().sort({ roomNumber: 1 }).toArray();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// เพิ่มห้อง (POST)
-app.post('/api/rooms', (req, res) => {
-    const newRoom = { id: Date.now(), ...req.body };
-    rooms.push(newRoom);
-    res.json(newRoom);
+app.post('/api/rooms', async (req, res) => {
+  try {
+    const rooms = getCollection('rooms');
+    const newRoom = {
+      roomNumber: req.body.roomNumber,
+      type: req.body.type,
+      price: Number(req.body.price),
+      status: req.body.status || 'available',
+      images: Array.isArray(req.body.images) ? req.body.images : [],
+      description: req.body.description || '',
+      currentBookingId: null,
+      createdAt: new Date(),
+    };
+
+    const result = await rooms.insertOne(newRoom);
+
+    res.status(201).json({
+      _id: result.insertedId,
+      ...newRoom,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// ลบห้อง (DELETE)
-app.delete('/api/rooms/:id', (req, res) => {
-    rooms = rooms.filter(r => r.id != req.params.id);
-    res.json({ message: "ลบสำเร็จ" });
+app.put('/api/rooms/:id', async (req, res) => {
+  try {
+    const rooms = getCollection('rooms');
+    const roomId = toObjectId(req.params.id);
+
+    if (!roomId) {
+      return res.status(400).json({ error: 'Invalid room id' });
+    }
+
+    const { status, roomNumber, type, price, description, images, currentBookingId } = req.body;
+    const updateData = {};
+
+    if (status !== undefined) updateData.status = status;
+    if (roomNumber !== undefined) updateData.roomNumber = roomNumber;
+    if (type !== undefined) updateData.type = type;
+    if (price !== undefined) updateData.price = Number(price);
+    if (description !== undefined) updateData.description = description;
+    if (images !== undefined) updateData.images = images;
+    if (currentBookingId !== undefined) updateData.currentBookingId = currentBookingId;
+
+    const result = await rooms.updateOne({ _id: roomId }, { $set: updateData });
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ error: 'Room not found' });
+    }
+
+    const updatedRoom = await rooms.findOne({ _id: roomId });
+    res.json(updatedRoom);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.listen(5000, () => {
-    console.log("Server กำลังวิ่งอยู่ที่ http://localhost:5000");
+app.delete('/api/rooms/:id', async (req, res) => {
+  try {
+    const rooms = getCollection('rooms');
+    const roomId = toObjectId(req.params.id);
+
+    if (!roomId) {
+      return res.status(400).json({ error: 'Invalid room id' });
+    }
+
+    const result = await rooms.deleteOne({ _id: roomId });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ error: 'Room not found' });
+    }
+
+    res.json({ message: 'Delete successful' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/bookings', async (req, res) => {
+  try {
+    const bookings = getCollection('bookings');
+    const { userId, role } = req.query;
+
+    const query = {};
+
+    if (role !== 'admin' && userId) {
+      query.userId = userId;
+    }
+
+    const data = await bookings.find(query).sort({ createdAt: -1 }).toArray();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/bookings', async (req, res) => {
+  try {
+    const {
+      userId,
+      roomId,
+      customerName,
+      email,
+      phone,
+      checkInDate,
+      checkOutDate,
+      checkInTime,
+      checkOutTime,
+      promotionId,
+    } = req.body;
+
+    if (!roomId || !customerName || !checkInDate || !checkOutDate) {
+      return res.status(400).json({ error: 'ข้อมูลการจองไม่ครบ' });
+    }
+
+    const rooms = getCollection('rooms');
+    const bookings = getCollection('bookings');
+    const roomObjectId = toObjectId(roomId);
+
+    if (!roomObjectId) {
+      return res.status(400).json({ error: 'Invalid room id' });
+    }
+
+    const room = await rooms.findOne({ _id: roomObjectId });
+
+    if (!room) {
+      return res.status(404).json({ error: 'ไม่พบห้องพักที่ต้องการจอง' });
+    }
+
+    if (room.status !== 'available') {
+      return res.status(409).json({ error: 'ห้องนี้ไม่พร้อมให้จองแล้ว' });
+    }
+
+    const totalNights = calculateNights(checkInDate, checkOutDate);
+
+    if (totalNights <= 0) {
+      return res.status(400).json({ error: 'วันเข้าพักและวันออกไม่ถูกต้อง' });
+    }
+
+    const totalPrice = room.price * totalNights;
+    const booking = {
+      userId: userId || null,
+      roomId,
+      roomNumber: room.roomNumber,
+      roomType: room.type,
+      customerName,
+      email: email || null,
+      phone: phone || null,
+      checkInDate,
+      checkOutDate,
+      checkInTime: checkInTime || null,
+      checkOutTime: checkOutTime || null,
+      pricePerNight: room.price,
+      totalNights,
+      totalPrice,
+      promotionId: promotionId || null,
+      finalPrice: totalPrice,
+      status: 'booked',
+      createdAt: new Date(),
+    };
+
+    const result = await bookings.insertOne(booking);
+
+    await rooms.updateOne(
+      { _id: roomObjectId },
+      {
+        $set: {
+          status: 'booked',
+          currentBookingId: result.insertedId.toString(),
+        },
+      }
+    );
+
+    res.status(201).json({
+      _id: result.insertedId,
+      ...booking,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+connectDB().then(() => {
+  app.listen(5000, () => {
+    console.log('Server running on port 5000');
+  });
 });

@@ -1,30 +1,61 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import Home from './Home';
 import RoomList from './RoomList';
 import Booking from './Booking';
 import AdminDashboard from './AdminDashboard';
 import Login from './Login';
-import './App.css'; // อย่าลืมใส่สไตล์กลางที่นี่
+import MyBookings from './MyBookings';
+import { clearStoredUser, getStoredUser } from './auth';
+import './App.css';
 
 function App() {
+  const [currentUser, setCurrentUser] = useState(() => getStoredUser());
+
+  useEffect(() => {
+    setCurrentUser(getStoredUser());
+  }, []);
+
+  const handleLogout = () => {
+    clearStoredUser();
+    setCurrentUser(null);
+  };
+
   return (
     <Router>
-      {/* ส่วนของเมนูนำทางที่จะแสดงทุกหน้า */}
       <nav className="navbar">
         <Link to="/">หน้าแรก</Link>
-        <Link to="/rooms">รายการห้องพัก</Link>
-        <Link to="/booking">จองห้องพัก</Link>
-        <Link to="/admin">จัดการ(Admin)</Link>
-        <Link to="/login" className="login-link">เข้าสู่ระบบ</Link>
+        <Link to="/rooms">ห้องพักรีสอร์ท</Link>
+
+        {currentUser?.role === 'user' ? <Link to="/my-bookings">การจองของฉัน</Link> : null}
+        {currentUser?.role === 'admin' ? <Link to="/admin">จัดการรีสอร์ท</Link> : null}
+
+        <div className="navbar-right">
+          {currentUser ? (
+            <>
+              <span className="user-chip">
+                {currentUser.username} ({currentUser.role})
+              </span>
+              <button type="button" className="nav-button" onClick={handleLogout}>
+                ออกจากระบบ
+              </button>
+            </>
+          ) : (
+            <Link to="/login" className="login-link">เข้าสู่ระบบ</Link>
+          )}
+        </div>
       </nav>
 
-      {/* ส่วนของเนื้อหาที่จะเปลี่ยนไปตามหน้าต่างๆ */}
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/rooms" element={<RoomList />} />
-        <Route path="/booking" element={<Booking />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Home currentUser={currentUser} />} />
+        <Route path="/rooms" element={<RoomList currentUser={currentUser} />} />
+        <Route path="/booking" element={<Booking currentUser={currentUser} />} />
+        <Route path="/my-bookings" element={currentUser ? <MyBookings /> : <Navigate to="/login" replace />} />
+        <Route
+          path="/admin"
+          element={currentUser?.role === 'admin' ? <AdminDashboard currentUser={currentUser} /> : <Navigate to="/login" replace />}
+        />
+        <Route path="/login" element={<Login onLogin={setCurrentUser} />} />
       </Routes>
     </Router>
   );

@@ -1,4 +1,95 @@
-.room-table { width: 90%; margin: 20px auto; border-collapse: separate; border-spacing: 0; }
-.room-table th { background: #f1f5f9; padding: 16px; border-bottom: 2px solid #cbd5e1; }
-.room-table td { padding: 16px; border-bottom: 1px solid #e2e8f0; }
-button { cursor: pointer; padding: 8px 16px; border-radius: 6px; border: none; margin: 0 4px; }
+.admin-container {
+  padding: 48px 20px;
+}
+
+.admin-header {
+  width: min(90%, 1100px);
+  margin: 0 auto 24px;
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.admin-header p {
+  margin-bottom: 0;
+}
+
+.admin-profile {
+  display: grid;
+  gap: 6px;
+  background: #e0f2fe;
+  padding: 16px;
+  border-radius: 16px;
+  min-width: 240px;
+}
+
+.admin-form {
+  width: min(90%, 1100px);
+  margin: 0 auto 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.admin-form input {
+  padding: 12px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+}
+
+.admin-form select {
+  padding: 12px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+}
+
+.admin-form button,
+.room-table button {
+  cursor: pointer;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  margin: 0 4px;
+}
+
+.admin-error,
+.admin-status {
+  width: min(90%, 1100px);
+  margin: 0 auto 16px;
+}
+
+.admin-error {
+  color: #b91c1c;
+}
+
+.admin-section {
+  width: min(90%, 1100px);
+  margin: 0 auto 28px;
+}
+
+.room-table {
+  width: 100%;
+  margin: 20px auto 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.room-table th {
+  background: #f1f5f9;
+  padding: 16px;
+  border-bottom: 2px solid #cbd5e1;
+}
+
+.room-table td {
+  padding: 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.del-btn {
+  background: #dc2626;
+  color: white;
+}

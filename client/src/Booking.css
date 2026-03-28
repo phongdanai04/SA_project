@@ -4,6 +4,14 @@
   margin: 0 auto;
 }
 
+.booking-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
 .booking-form input {
   width: 100%;
   padding: 14px;
@@ -11,6 +19,13 @@
   border: 1px solid #ddd;
   border-radius: 8px;
   font-size: 1rem;
+}
+
+.booking-label {
+  display: block;
+  color: #334155;
+  font-weight: 600;
+  margin-bottom: 8px;
 }
 
 .confirm-btn {
@@ -23,4 +38,31 @@
   font-size: 1.1rem;
   font-weight: bold;
   cursor: pointer;
+}
+
+.confirm-btn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.form-error {
+  color: #b91c1c;
+  margin: 0 0 16px;
+}
+
+.booking-summary {
+  background: #eff6ff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 18px;
+}
+
+.booking-summary p {
+  margin: 0 0 8px;
+}
+
+.inline-link {
+  color: #1e3a8a;
+  font-weight: 600;
+  text-decoration: none;
 }
