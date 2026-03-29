@@ -50,6 +50,12 @@
   color: #475569;
 }
 
+.slip-link {
+  color: #1d4ed8;
+  text-decoration: none;
+  font-weight: 600;
+}
+
 .booking-pill {
   display: inline-block;
   margin-top: 10px;
@@ -68,4 +74,37 @@
 .booking-pill-checked-in {
   background: #dcfce7;
   color: #15803d;
+}
+
+.booking-pill-pending-confirmation {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.booking-pill-cancelled-no-refund {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.booking-pill-checked-out {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.booking-card-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-top: 14px;
+}
+
+.cancel-booking-btn {
+  border: none;
+  background: #dc2626;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
 }

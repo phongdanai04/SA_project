@@ -9,34 +9,49 @@ function MyBookings() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const fetchBookings = async () => {
+    const user = getStoredUser();
+
+    if (!user) {
+      setError('กรุณาเข้าสู่ระบบก่อนดูประวัติการจอง');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await api.get('/api/bookings', {
+        params: {
+          userId: user._id,
+          role: user.role,
+        },
+      });
+      setBookings(response.data);
+    } catch (err) {
+      setError('ไม่สามารถโหลดประวัติการจองได้');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchBookings = async () => {
-      const user = getStoredUser();
-
-      if (!user) {
-        setError('กรุณาเข้าสู่ระบบก่อนดูประวัติการจอง');
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const response = await api.get('/api/bookings', {
-          params: {
-            userId: user._id,
-            role: user.role,
-          },
-        });
-        setBookings(response.data);
-      } catch (err) {
-        setError('ไม่สามารถโหลดประวัติการจองได้');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchBookings();
   }, []);
+
+  const handleCancelBooking = async (bookingId) => {
+    const confirmed = window.confirm('หากกดยกเลิกเราจะไม่คืนเงินมัดจำ คุณต้องการยกเลิกการจองใช่หรือไม่');
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await api.patch(`/api/bookings/${bookingId}/cancel`);
+      await fetchBookings();
+    } catch (err) {
+      setError(err.response?.data?.error || 'ไม่สามารถยกเลิกการจองได้');
+    }
+  };
 
   return (
     <div className="bookings-container">
@@ -63,10 +78,24 @@ function MyBookings() {
             <p>วันที่เข้าพัก: {booking.checkInDate}</p>
             <p>วันที่ออก: {booking.checkOutDate}</p>
             <p>เวลาเช็กอิน: {booking.checkInTime || '-'}</p>
-            <p>ยอดรวม: {Number(booking.finalPrice || 0).toLocaleString()} บาท</p>
-            <span className={`booking-pill booking-pill-${booking.status}`}>
-              {booking.status}
-            </span>
+            <p>ยอดเต็ม: {Number(booking.finalPrice || 0).toLocaleString()} บาท</p>
+            <p>มัดจำ: {Number(booking.depositAmount || 0).toLocaleString()} บาท</p>
+            <p>สถานะการชำระเงิน: {booking.paymentStatus}</p>
+            {booking.paymentSlip ? (
+              <a href={`http://localhost:5000${booking.paymentSlip}`} target="_blank" rel="noreferrer" className="slip-link">
+                ดูสลิปที่อัปโหลด
+              </a>
+            ) : null}
+            <div className="booking-card-footer">
+              <span className={`booking-pill booking-pill-${booking.status}`}>
+                {booking.status}
+              </span>
+              {['pending-confirmation', 'booked'].includes(booking.status) ? (
+                <button type="button" className="cancel-booking-btn" onClick={() => handleCancelBooking(booking._id)}>
+                  ยกเลิกการจอง
+                </button>
+              ) : null}
+            </div>
           </article>
         ))}
       </div>

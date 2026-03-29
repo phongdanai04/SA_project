@@ -6,6 +6,7 @@ import Booking from './Booking';
 import AdminDashboard from './AdminDashboard';
 import Login from './Login';
 import MyBookings from './MyBookings';
+import Payment from './Payment';
 import { clearStoredUser, getStoredUser } from './auth';
 import './App.css';
 
@@ -50,6 +51,7 @@ function App() {
         <Route path="/" element={<Home currentUser={currentUser} />} />
         <Route path="/rooms" element={<RoomList currentUser={currentUser} />} />
         <Route path="/booking" element={<Booking currentUser={currentUser} />} />
+        <Route path="/payment" element={<Payment currentUser={currentUser} />} />
         <Route path="/my-bookings" element={currentUser ? <MyBookings /> : <Navigate to="/login" replace />} />
         <Route
           path="/admin"

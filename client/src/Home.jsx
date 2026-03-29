@@ -1,14 +1,19 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from './api';
 import './Home.css';
 
 function Home({ currentUser }) {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     total: 0,
     available: 0,
     booked: 0,
     occupied: 0,
+  });
+  const [searchDates, setSearchDates] = useState({
+    checkInDate: '',
+    checkOutDate: '',
   });
 
   useEffect(() => {
@@ -31,30 +36,44 @@ function Home({ currentUser }) {
     fetchRoomStats();
   }, []);
 
+  const handleSearchAvailability = (event) => {
+    event.preventDefault();
+
+    navigate('/rooms', {
+      state: {
+        searchDates,
+      },
+    });
+  };
+
   return (
     <div className="home-container">
       <div className="hero-section">
         <h1>ระบบจัดการรีสอร์ท</h1>
-        <p>ดูรายละเอียดห้องพัก จองตามวันเข้าพักจริง และแยกการใช้งานระหว่างลูกค้าทั่วไปกับผู้ดูแลระบบ</p>
+        <p>เลือกวันเข้าพักเพื่อค้นหาห้องว่างได้ทันที พร้อมดูรายละเอียดห้องพักก่อนจองและชำระเงิน</p>
 
-        <div className="stats-grid">
-          <div className="stat-card">
-            <span className="stat-label">ห้องทั้งหมด</span>
-            <strong>{stats.total}</strong>
-          </div>
-          <div className="stat-card">
-            <span className="stat-label">พร้อมจอง</span>
-            <strong>{stats.available}</strong>
-          </div>
-          <div className="stat-card">
-            <span className="stat-label">จองแล้ว</span>
-            <strong>{stats.booked}</strong>
-          </div>
-          <div className="stat-card">
-            <span className="stat-label">เข้าพักอยู่</span>
-            <strong>{stats.occupied}</strong>
-          </div>
-        </div>
+        <form className="availability-form" onSubmit={handleSearchAvailability}>
+          <label>
+            วันที่เข้าพัก
+            <input
+              type="date"
+              required
+              value={searchDates.checkInDate}
+              onChange={(event) => setSearchDates({ ...searchDates, checkInDate: event.target.value })}
+            />
+          </label>
+          <label>
+            วันที่ออก
+            <input
+              type="date"
+              required
+              value={searchDates.checkOutDate}
+              onChange={(event) => setSearchDates({ ...searchDates, checkOutDate: event.target.value })}
+            />
+          </label>
+          <button type="submit" className="search-btn">ค้นหาห้องว่างตามวันที่</button>
+        </form>
+
 
         <div className="nav-buttons">
           <Link to="/rooms" className="btn-primary">ดูห้องพักทั้งหมด</Link>
